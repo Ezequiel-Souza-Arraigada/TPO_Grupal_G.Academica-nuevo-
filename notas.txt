@@ -1,0 +1,5 @@
+12345678;Proyecto final ingenierï¿½a informï¿½tica;4;4;;Aprobado;4
+12345679;Programaciï¿½n 1;9;2;4;Aprobado;7
+
+12345678;Proyecto final ingeniería informática;9;8;;Aprobado;8
+12345679;Programación 1;4;4;;Aprobado;7
