@@ -66,10 +66,10 @@ def validar_nombre_apellido(valor):
 def ingresar_dni():
     dni = input("Ingrese el DNI del estudiante (o presione Enter para salir): ").strip()
     if dni == "":
-        return None  # Indica que el usuario desea salir
+        return None
     if not validar_dni(dni):
         print("DNI inválido. Debe tener 8 dígitos y estar entre 10000000 y 99999999.")
-        return ingresar_dni()  # Reintentar
+        return ingresar_dni()
     return dni
 
 
@@ -94,28 +94,30 @@ def abrir_archivo(nombre, modo):
         return None
 
 
-# Carga del archivo de estudiantes
-def cargar_estudiantes():
+# Función para verificar si un DNI ya existe en el archivo
+def existe_dni(dni):
     if not os.path.exists(ARCHIVO_ESTUDIANTES):
-        return []
+        return False
     with open(ARCHIVO_ESTUDIANTES, "r") as archivo:
-        return [linea.strip().split(";") for linea in archivo if linea.strip()]
+        for linea in archivo:
+            if linea.startswith(dni + ";"):
+                return True
+    return False
+
 
 # Función para agregar estudiantes
 def agregar_estudiante():
-    estudiantes = cargar_estudiantes()  # Cargar estudiantes existentes
     archivo = abrir_archivo(ARCHIVO_ESTUDIANTES, "a")
     if not archivo:
         return
     try:
         while True:
             dni = ingresar_dni()
-            if dni is None:  # Usuario presionó Enter para salir
+            if dni is None:
                 print("Finalizando ingreso de estudiantes.")
                 break
 
-            # Verificar duplicados solo por DNI
-            if any(estudiante[0] == dni for estudiante in estudiantes):
+            if existe_dni(dni):
                 print("Este DNI ya está registrado. Intente con otro.")
                 continue
 
@@ -129,15 +131,14 @@ def agregar_estudiante():
                 print("Apellido inválido. Debe contener solo letras y no estar vacío.")
                 apellido = input("Ingrese el apellido: ").strip()
 
-            # Agregar estudiante al archivo y a la lista en memoria
             archivo.write(f"{dni};{nombre};{apellido}\n")
-            estudiantes.append([dni, nombre, apellido])
             print("Estudiante agregado.")
     finally:
         try:
             archivo.close()
         except NameError:
             pass
+
 
 # Funcion para mostrar estudinates 
 def mostrar_estudiantes():
@@ -246,10 +247,10 @@ def cargar_notas():
             return
 
         print("Materias asignadas:")
-        index = 1  # Contador manual
+        index = 1
         for materia in asignaciones[dni]:
             print(f"{index}. {materia}")
-            index += 1  # Incrementar el índice
+            index += 1
 
         while True:
             try:
@@ -262,25 +263,23 @@ def cargar_notas():
             except ValueError:
                 print("Entrada no válida. Por favor, ingrese un número.")
 
-        # Leer las notas existentes de la materia, si las hay
-        archivo_notas.seek(0)  # Regresar al inicio del archivo
+        archivo_notas.seek(0)
         notas_existentes = {}
         for linea in archivo_notas:
             linea = linea.strip().split(";")
             if len(linea) >= 7:
                 dni_nota, materia_nota = linea[0], linea[1]
                 if dni_nota == dni and materia_nota == materia:
-                    notas_existentes[materia] = linea[2:]  # Guardamos las notas
+                    notas_existentes[materia] = linea[2:]
 
-        # Verificar si ya existen notas
         if materia in notas_existentes:
             print("Notas actuales para esta materia:")
-            print(f"Notas: {notas_existentes[materia][:2]}")  # Mostrar solo las primeras dos notas
+            print(f"Notas: {notas_existentes[materia][:2]}")
 
             modificar = input("¿Desea modificar las notas? (s/n): ").strip().lower()
             if modificar != 's':
                 print("Se mantendrán las notas actuales.")
-                return  # Si no se modifican, salimos
+                return
 
         # Si no existen notas o se desea modificarlas, pedir las nuevas
         print(f"Materia seleccionada: {materia}")
@@ -294,7 +293,13 @@ def cargar_notas():
                 print("Nota inválida. Intente nuevamente.")
 
         recuperatorio = ""
-        if any(nota < 4 for nota in notas):
+        nota_invalida = False
+        for nota in notas:
+            if nota < 4:
+                nota_invalida = True
+                break
+
+        if nota_invalida:
             while True:
                 nota = input("Ingrese el Recuperatorio (entre 1 y 10): ").strip()
                 if validar_nota(nota):
@@ -322,7 +327,6 @@ def cargar_notas():
         lineas = archivo_notas.readlines()
         archivo_notas.close()
 
-        # Filtrar la materia actualizada
         with open(ARCHIVO_NOTAS, "w") as archivo:
             for linea in lineas:
                 if linea.strip().split(";")[0] != dni or linea.strip().split(";")[1] != materia:
@@ -347,7 +351,6 @@ def mostrar_notas():
         return
 
     try:
-        # Crear diccionarios de estudiantes y asignaciones
         estudiantes = {linea.split(";")[0]: linea.strip().split(";")[1:] for linea in archivo_estudiantes}
         asignaciones = {}
         for linea in archivo_asignaciones:
@@ -357,7 +360,6 @@ def mostrar_notas():
             else:
                 asignaciones[dni] = [materia]
 
-        # Solicitar DNI del estudiante
         dni = input("Ingrese el DNI del estudiante para ver sus notas: ").strip()
         if not validar_dni(dni) or dni not in estudiantes:
             print("Estudiante no encontrado o no tiene materias asignadas.")
@@ -368,14 +370,12 @@ def mostrar_notas():
             print(f"El estudiante {nombre} {apellido} no tiene materias asignadas.")
             return
 
-        # Mostrar materias asignadas al estudiante
         print(f"Materias asignadas al estudiante {nombre} {apellido}:")
         contador = 1
         for materia in asignaciones[dni]:
             print(f"{contador}. {materia}")
             contador += 1
 
-        # Seleccionar una materia
         while True:
             try:
                 seleccion = int(input("Seleccione el número de la materia para ver las notas: "))
