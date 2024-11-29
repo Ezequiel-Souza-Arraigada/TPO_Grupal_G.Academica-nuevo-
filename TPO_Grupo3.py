@@ -96,12 +96,15 @@ def abrir_archivo(nombre, modo):
 
 # Función para verificar si un DNI ya existe en el archivo
 def existe_dni(dni):
-    if not os.path.exists(ARCHIVO_ESTUDIANTES):
+    try:
+        with open(ARCHIVO_ESTUDIANTES, "r") as archivo:
+            for linea in archivo:
+                datos = linea.strip().split(";")
+                if datos[0] == dni:
+                    return True
+    except FileNotFoundError:
+        # Si el archivo no existe, asumimos que el DNI no está registrado
         return False
-    with open(ARCHIVO_ESTUDIANTES, "r") as archivo:
-        for linea in archivo:
-            if linea.startswith(dni + ";"):
-                return True
     return False
 
 
@@ -324,14 +327,16 @@ def cargar_notas():
 
         # Reabrir archivo de notas para actualizar
         archivo_notas.seek(0)
-        lineas = archivo_notas.readlines()
+        lineas = []
+        for linea in archivo_notas:
+            datos = linea.strip().split(";")
+            if datos[0] != dni or datos[1] != materia:
+                lineas.append(linea)
         archivo_notas.close()
 
         with open(ARCHIVO_NOTAS, "w") as archivo:
             for linea in lineas:
-                if linea.strip().split(";")[0] != dni or linea.strip().split(";")[1] != materia:
-                    archivo.write(linea)
-
+                archivo.write(linea)
             # Guardar las nuevas notas
             archivo.write(f"{dni};{materia};{notas[0]};{notas[1]};{recuperatorio};{cursada};{nota_final}\n")
 

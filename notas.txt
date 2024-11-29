@@ -6,3 +6,4 @@
 98745632;Cálculo 2;4;2;4;Aprobado;4
 12345678;Desarrollo de aplicaciones 2;8;8;;Aprobado;7
 46213568;Álgebra;9;9;;Aprobado;10
+98765432;Programación 3;4;5;;Aprobado;7

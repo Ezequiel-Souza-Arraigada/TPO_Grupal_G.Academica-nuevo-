@@ -2,3 +2,4 @@
 12345679;Eze;Souza
 98745632;Rafa;Souza
 46213568;Eze;Souza
+98765432;Nico;Perez
