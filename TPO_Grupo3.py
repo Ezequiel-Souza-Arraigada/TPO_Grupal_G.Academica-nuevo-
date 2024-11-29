@@ -228,12 +228,17 @@ def mostrar_asignaciones():
         except NameError:
             pass
 
-# Nueva funcion para cargar o modificar notas
+# Función para cargar o modificar notas
 def cargar_notas():
     archivo_notas = abrir_archivo(ARCHIVO_NOTAS, "r+")
+    
+    if not archivo_notas:
+        archivo_notas = abrir_archivo(ARCHIVO_NOTAS, "w+")
+    
     archivo_asignaciones = abrir_archivo(ARCHIVO_ASIGNACIONES, "r")
     if not archivo_notas or not archivo_asignaciones:
         return
+
 
     try:
         asignaciones = {}
